@@ -8,16 +8,19 @@ export default function useLiveTime() {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
+    let interval;
     // Align to the next minute boundary for clean updates
     const msToNextMinute = (60 - now.getSeconds()) * 1000;
     const initialTimeout = setTimeout(() => {
       setNow(new Date());
       // Then update every 60 seconds
-      const interval = setInterval(() => setNow(new Date()), 60000);
-      return () => clearInterval(interval);
+      interval = setInterval(() => setNow(new Date()), 60000);
     }, msToNextMinute);
 
-    return () => clearTimeout(initialTimeout);
+    return () => {
+      clearTimeout(initialTimeout);
+      if (interval) clearInterval(interval);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const hour = now.getHours();

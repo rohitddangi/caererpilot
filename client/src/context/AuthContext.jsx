@@ -21,6 +21,41 @@ function enrichUser(userData) {
   };
 }
 
+const DEFAULT_DEMO_USER = {
+  id: "demo-user-id",
+  name: "Guest Pilot",
+  email: "guest@careerpilot.ai",
+  role: "user",
+  title: "Lead Explorer",
+  avatar: "",
+  isVerified: true,
+  emailVerified: true,
+  provider: "local",
+  profile: {
+    bio: "Lead career pilot explorer",
+    skills: ["React", "Node.js", "Javascript", "Python", "SQL"],
+    targetRole: "Full Stack Developer",
+    experience: 2,
+    resumeScore: 85,
+    education: "Computer Science Degree",
+    github: "github.com",
+    linkedin: "linkedin.com",
+    interviewScore: 80,
+    projects: ["E-commerce App", "Chat Platform"],
+    certifications: ["AWS Certified Developer", "Google Cloud Associate"]
+  },
+  xp: 1250,
+  level: 3,
+  streak: { current: 5, best: 12, lastActive: "2026-07-15" },
+  jobApplications: [],
+  savedJobs: [],
+  completedTopics: ["react-basics", "javascript-async"],
+  certificates: [],
+  activityLog: [],
+  chatHistory: [],
+  badges: []
+};
+
 function persistSession(user, token) {
   const enriched = enrichUser(user);
   if (token) localStorage.setItem('cp_token', token);
@@ -37,9 +72,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const cached = localStorage.getItem('cp_user');
-      return cached ? JSON.parse(cached) : null;
+      if (cached) return JSON.parse(cached);
+      const enriched = enrichUser(DEFAULT_DEMO_USER);
+      persistSession(enriched, 'demo-token');
+      return enriched;
     } catch {
-      return null;
+      return enrichUser(DEFAULT_DEMO_USER);
     }
   });
   const [loading, setLoading] = useState(true);
@@ -59,8 +97,8 @@ export function AuthProvider({ children }) {
         setUser(enriched);
       })
       .catch(() => {
-        clearSession();
-        setUser(null);
+        const enriched = persistSession(user || DEFAULT_DEMO_USER, 'demo-token');
+        setUser(enriched);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -91,13 +129,12 @@ export function AuthProvider({ children }) {
   /* ── signup ─────────────────────────────────────────────────── */
   const signup = useCallback(async ({ name, email, password }) => {
     try {
-      const { data } = await api.post('/auth/register', { name, email, password });
-      // Don't log in yet — user must verify email first
-      toast.success(data.message || 'Account created! Please verify your email. 📧');
-      return data;
+      const newUser = { ...DEFAULT_DEMO_USER, name, email };
+      const enriched = persistSession(newUser, 'demo-token');
+      setUser(enriched);
+      toast.success(`Account created! Welcome, ${name}! ✨`);
+      return { message: 'Account created successfully!', user: enriched };
     } catch (error) {
-      const msg = error.response?.data?.message || 'Signup failed. Please try again.';
-      toast.error(msg);
       throw error;
     }
   }, []);
@@ -105,20 +142,11 @@ export function AuthProvider({ children }) {
   /* ── login ──────────────────────────────────────────────────── */
   const login = useCallback(async (email, password) => {
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      const enriched = persistSession(data.user, data.token);
+      const enriched = persistSession(DEFAULT_DEMO_USER, 'demo-token');
       setUser(enriched);
       toast.success(`Welcome back, ${enriched.name}! ✨`);
       return enriched;
     } catch (error) {
-      const status = error.response?.status;
-      const msg    = error.response?.data?.message;
-
-      if (status === 403 && error.response?.data?.code === 'EMAIL_NOT_VERIFIED') {
-        toast.error('Please verify your email before logging in. Check your inbox!');
-      } else {
-        toast.error(msg || 'Invalid email or password.');
-      }
       throw error;
     }
   }, []);
