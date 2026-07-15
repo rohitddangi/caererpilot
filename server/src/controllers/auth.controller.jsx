@@ -50,9 +50,20 @@ export function signRefreshToken(user) {
   );
 }
 
+function shouldSkipVerification() {
+  const host = process.env.SMTP_HOST;
+  const skip = process.env.SKIP_EMAIL_VERIFICATION === 'true';
+  const isPlaceholder = !host || 
+    host.toLowerCase().startsWith('your-') || 
+    host.toLowerCase().startsWith('replace-') || 
+    host.toLowerCase().startsWith('changeme') || 
+    host === '';
+  return skip || isPlaceholder;
+}
+
 /** Strip sensitive fields before sending to client */
 export function sanitizeUser(user) {
-  const isVerified = process.env.NODE_ENV !== 'production' ? true : user.isVerified;
+  const isVerified = process.env.NODE_ENV !== 'production' || shouldSkipVerification() ? true : user.isVerified;
   return {
     id:         user._id,
     name:       user.name,
@@ -135,7 +146,7 @@ export async function register(req, res, next) {
         password,
         provider: 'local',
         role:     normalizedEmail === adminEmail ? 'admin' : 'user',
-        isVerified: false,
+        isVerified: shouldSkipVerification(),
         verificationToken: hashedToken,
         verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       });
@@ -158,8 +169,8 @@ export async function register(req, res, next) {
         role: normalizedEmail === adminEmail ? 'admin' : 'user',
         title: normalizedEmail === adminEmail ? 'Founder Admin' : 'CareerPilot Member',
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=d6a83a&color=000&bold=true&size=128`,
-        isVerified: false,
-        emailVerified: false,
+        isVerified: shouldSkipVerification(),
+        emailVerified: shouldSkipVerification(),
         verificationToken: hashedToken,
         verificationTokenExpires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         profile: { skills: [] },
@@ -205,7 +216,7 @@ export async function login(req, res, next) {
         return res.status(401).json({ message: 'Invalid email or password.' });
       }
 
-      if (process.env.NODE_ENV === 'production' && !user.isVerified && user.provider === 'local') {
+      if (process.env.NODE_ENV === 'production' && !shouldSkipVerification() && !user.isVerified && user.provider === 'local') {
         return res.status(403).json({
           message: 'Please verify your email before logging in. Check your inbox for the verification link.',
           code:    'EMAIL_NOT_VERIFIED',
@@ -219,7 +230,7 @@ export async function login(req, res, next) {
       }
 
       const userObj = sanitizeLocalUser(rawUser);
-      if (process.env.NODE_ENV === 'production' && !userObj.isVerified && userObj.provider === 'local') {
+      if (process.env.NODE_ENV === 'production' && !shouldSkipVerification() && !userObj.isVerified && userObj.provider === 'local') {
         return res.status(403).json({
           message: 'Please verify your email before logging in. Check your inbox for the verification link.',
           code:    'EMAIL_NOT_VERIFIED',
