@@ -46,9 +46,28 @@ app.use(helmet());
 // Compression
 app.use(compression());
 
-// CORS — allow cookies from the frontend
+// CORS — allow cookies from the frontend with dynamic origin validation
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow server-to-server or postman requests (no origin header)
+    if (!origin) return callback(null, true);
+
+    const isAllowed = allowedOrigins.some(allowed => allowed === origin) || 
+                      origin.endsWith('.vercel.app') || 
+                      origin.includes('localhost:');
+                      
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
