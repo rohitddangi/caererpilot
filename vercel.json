@@ -4,17 +4,17 @@
       "src": "client/package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "client/dist"
+        "distDir": "dist"
       }
     }
   ],
   "routes": [
-    { "src": "/assets/(.*)", "dest": "/client/dist/assets/$1" },
-    { "src": "/logo.png", "dest": "/client/dist/logo.png" },
-    { "src": "/favicon.svg", "dest": "/client/dist/favicon.svg" },
-    { "src": "/manifest.json", "dest": "/client/dist/manifest.json" },
-    { "src": "/sw.js", "dest": "/client/dist/sw.js" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/logo.png", "dest": "/logo.png" },
+    { "src": "/favicon.svg", "dest": "/favicon.svg" },
+    { "src": "/manifest.json", "dest": "/manifest.json" },
+    { "src": "/sw.js", "dest": "/sw.js" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/client/dist/index.html" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
