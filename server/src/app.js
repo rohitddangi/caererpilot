@@ -6,42 +6,49 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
-import passport from './config/passport.jsx';
-import { validateEnv } from './config/env.jsx';
+import passport from './config/passport.js';
+import { validateEnv } from './config/env.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { connectDB } from './config/db.jsx';
-import { initializeFirebaseAdmin } from './config/firebase.jsx';
-import authRoutes from './routes/auth.routes.jsx';
-import aiRoutes from './routes/ai.routes.jsx';
-import roadmapRoutes from './routes/roadmap.routes.jsx';
-import userRoutes from './routes/user.routes.jsx';
-import resourceRoutes from './routes/resource.routes.jsx';
-import platformRoutes from './routes/platform.routes.jsx';
-import skillgapRoutes from './routes/skillgap.routes.jsx';
-import interviewRoutes from './routes/interview.routes.jsx';
-import jobsRoutes from './routes/jobs.routes.jsx';
-import learningRoutes from './routes/learning.routes.jsx';
-import progressRoutes from './routes/progress.routes.jsx';
-import goalsRoutes from './routes/goals.routes.jsx';
-import { errorHandler, notFound } from './middleware/error.jsx';
+import { connectDB } from './config/db.js';
+import { initializeFirebaseAdmin } from './config/firebase.js';
+import authRoutes from './routes/auth.routes.js';
+import aiRoutes from './routes/ai.routes.js';
+import roadmapRoutes from './routes/roadmap.routes.js';
+import userRoutes from './routes/user.routes.js';
+import resourceRoutes from './routes/resource.routes.js';
+import platformRoutes from './routes/platform.routes.js';
+import skillgapRoutes from './routes/skillgap.routes.js';
+import interviewRoutes from './routes/interview.routes.js';
+import jobsRoutes from './routes/jobs.routes.js';
+import learningRoutes from './routes/learning.routes.js';
+import progressRoutes from './routes/progress.routes.js';
+import goalsRoutes from './routes/goals.routes.js';
+import { errorHandler, notFound } from './middleware/error.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 5000;
 
-// Run environment check — prints warnings for missing/placeholder vars
+// Initialize environment check & Firebase Admin
 validateEnv();
-
-// Initialize Firebase Admin SDK
 initializeFirebaseAdmin();
 
-await connectDB();
+// Database pre-flight middleware for serverless / standalone
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('[DB Middleware] Connection error:', err);
+  }
+  next();
+});
 
 // Security headers
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Avoid blocking Vite or external assets in prod
+}));
 
 // Compression
 app.use(compression());
@@ -77,24 +84,24 @@ app.use(cors({
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Cookie parsing (needed for HTTP-only refresh token)
+// Cookie parsing
 app.use(cookieParser());
 
 // Request logging
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Global rate limiter (per-route limiters are stricter for auth endpoints)
+// Global rate limiter
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: true, legacyHeaders: false }));
 
-// Passport (no sessions — JWT only)
+// Passport (JWT only)
 app.use(passport.initialize());
 
-// Health check
-app.get('/api/health', (_req, res) => {
+// Health check endpoint
+app.get(['/api/health', '/health'], (_req, res) => {
   res.json({ ok: true, service: 'CareerPilot AI API', timestamp: new Date().toISOString() });
 });
 
-// Routes
+// API Routes
 app.use('/api/auth',      authRoutes);
 app.use('/api/ai',        aiRoutes);
 app.use('/api/roadmap',   roadmapRoutes);
@@ -108,8 +115,8 @@ app.use('/api/learning',  learningRoutes);
 app.use('/api/progress',  progressRoutes);
 app.use('/api/goals',     goalsRoutes);
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
+// Serve static assets in production if hosted on single Node server
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   const clientBuildPath = path.join(__dirname, '../../client/dist');
   app.use(express.static(clientBuildPath));
 
@@ -122,6 +129,4 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`CareerPilot AI API running on port ${port}`);
-});
+export default app;

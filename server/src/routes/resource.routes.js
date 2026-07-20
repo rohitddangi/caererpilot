@@ -1,7 +1,7 @@
 import express from 'express';
-import { isDbReady } from '../config/db.jsx';
-import { adminOnly, protect } from '../middleware/auth.jsx';
-import Resource from '../models/Resource.jsx';
+import { isDbReady } from '../config/db.js';
+import { adminOnly, protect } from '../middleware/auth.js';
+import Resource from '../models/Resource.js';
 
 const router = express.Router();
 

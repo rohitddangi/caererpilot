@@ -1,9 +1,9 @@
 import express from 'express';
 import multer from 'multer';
 import pdf from 'pdf-parse/lib/pdf-parse.js';
-import { protect } from '../middleware/auth.jsx';
-import { generateCareerJson } from '../services/gemini.jsx';
-import User from '../models/User.jsx';
+import { protect } from '../middleware/auth.js';
+import { generateCareerJson } from '../services/gemini.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });

@@ -9,6 +9,9 @@ export async function connectDB() {
     console.warn('MONGO_URI not set. API is running in demo fallback mode.');
     return;
   }
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
   try {
     mongoose.set('strictQuery', true);
     await mongoose.connect(process.env.MONGO_URI);

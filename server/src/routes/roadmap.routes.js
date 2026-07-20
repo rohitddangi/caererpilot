@@ -1,9 +1,9 @@
 import express from 'express';
-import { protect } from '../middleware/auth.jsx';
-import { isDbReady } from '../config/db.jsx';
-import User from '../models/User.jsx';
-import { updateLocalUser } from '../services/localAuthStore.jsx';
-import { generateCareerJson } from '../services/gemini.jsx';
+import { protect } from '../middleware/auth.js';
+import { isDbReady } from '../config/db.js';
+import User from '../models/User.js';
+import { updateLocalUser } from '../services/localAuthStore.js';
+import { generateCareerJson } from '../services/gemini.js';
 
 const router = express.Router();
 router.use(protect);

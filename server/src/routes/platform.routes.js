@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
-import { adminOnly, protect } from '../middleware/auth.jsx';
-import { addCertificate, getAdminAnalytics, getDashboard, listCertificates, listJobs, updateJob } from '../services/localAppStore.jsx';
+import { adminOnly, protect } from '../middleware/auth.js';
+import { addCertificate, getAdminAnalytics, getDashboard, listCertificates, listJobs, updateJob } from '../services/localAppStore.js';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.jsx';
-import { isDbReady } from '../config/db.jsx';
-import { findLocalUserById } from '../services/localAuthStore.jsx';
+import User from '../models/User.js';
+import { isDbReady } from '../config/db.js';
+import { findLocalUserById } from '../services/localAuthStore.js';
 
 /**
  * protect — verifies JWT access token, attaches req.user (Mongoose document or local user object).

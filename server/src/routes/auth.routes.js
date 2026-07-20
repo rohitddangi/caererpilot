@@ -18,8 +18,8 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import passport, { isGoogleConfigured } from '../config/passport.jsx';
-import { protect } from '../middleware/auth.jsx';
+import passport, { isGoogleConfigured } from '../config/passport.js';
+import { protect } from '../middleware/auth.js';
 import {
   register,
   login,
@@ -33,7 +33,7 @@ import {
   googleCallback,
   firebaseSync,
   CLIENT_URL,
-} from '../controllers/auth.controller.jsx';
+} from '../controllers/auth.controller.js';
 
 const router = express.Router();
 

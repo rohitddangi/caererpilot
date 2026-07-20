@@ -8,10 +8,10 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import crypto from 'crypto';
-import { GOOGLE_CONFIGURED } from './env.jsx';
-import { isDbReady } from './db.jsx';
-import User from '../models/User.jsx';
-import { readUsers, writeUsers, sanitizeLocalUser } from '../services/localAuthStore.jsx';
+import { GOOGLE_CONFIGURED } from './env.js';
+import { isDbReady } from './db.js';
+import User from '../models/User.js';
+import { readUsers, writeUsers, sanitizeLocalUser } from '../services/localAuthStore.js';
 
 // Derive callback URL — prefer explicit GOOGLE_CALLBACK_URL env var,
 // then fall back to SERVER_URL + fixed path.

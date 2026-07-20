@@ -8,11 +8,11 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import User from '../models/User.jsx';
-import { isDbReady } from '../config/db.jsx';
-import { sendVerificationEmail, sendPasswordResetEmail } from '../services/emailService.jsx';
-import { readUsers, writeUsers, sanitizeLocalUser, syncFirebaseLocalUser } from '../services/localAuthStore.jsx';
-import admin, { isFirebaseConfigured } from '../config/firebase.jsx';
+import User from '../models/User.js';
+import { isDbReady } from '../config/db.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/emailService.js';
+import { readUsers, writeUsers, sanitizeLocalUser, syncFirebaseLocalUser } from '../services/localAuthStore.js';
+import admin, { isFirebaseConfigured } from '../config/firebase.js';
 
 /* ── Constants ───────────────────────────────────────────────────── */
 
